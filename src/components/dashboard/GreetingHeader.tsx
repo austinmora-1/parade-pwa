@@ -25,23 +25,23 @@ const InviteFriendDialog = lazy(() => import('@/components/friends/InviteFriendD
 function getGreetingConfig(hour: number) {
   if (hour >= 5 && hour < 12) return {
     greeting: 'Good morning', icon: Coffee, emoji: '☀️',
-    lightGradient: 'linear-gradient(135deg, rgba(23,91,58,0.45) 0%, rgba(103,178,142,0.20) 45%, rgba(41,83,139,0.35) 100%)',
-    darkGradient: 'linear-gradient(135deg, rgba(23,91,58,0.55) 0%, rgba(103,178,142,0.22) 45%, rgba(41,83,139,0.45) 100%)',
+    lightGradient: 'linear-gradient(135deg, rgba(23,91,58,0.22) 0%, rgba(103,178,142,0.10) 45%, rgba(41,83,139,0.18) 100%)',
+    darkGradient: 'linear-gradient(135deg, rgba(23,91,58,0.28) 0%, rgba(103,178,142,0.12) 45%, rgba(41,83,139,0.22) 100%)',
   };
   if (hour >= 12 && hour < 17) return {
     greeting: 'Good afternoon', icon: Sun, emoji: '🌤️',
-    lightGradient: 'linear-gradient(135deg, rgba(41,83,139,0.40) 0%, rgba(80,140,180,0.18) 45%, rgba(23,91,58,0.42) 100%)',
-    darkGradient: 'linear-gradient(135deg, rgba(41,83,139,0.50) 0%, rgba(80,140,180,0.20) 45%, rgba(23,91,58,0.52) 100%)',
+    lightGradient: 'linear-gradient(135deg, rgba(41,83,139,0.20) 0%, rgba(80,140,180,0.10) 45%, rgba(23,91,58,0.22) 100%)',
+    darkGradient: 'linear-gradient(135deg, rgba(41,83,139,0.26) 0%, rgba(80,140,180,0.12) 45%, rgba(23,91,58,0.26) 100%)',
   };
   if (hour >= 17 && hour < 21) return {
     greeting: 'Good evening', icon: Sunset, emoji: '🌅',
-    lightGradient: 'linear-gradient(135deg, rgba(23,91,58,0.38) 0%, rgba(60,100,70,0.22) 40%, rgba(41,83,139,0.48) 100%)',
-    darkGradient: 'linear-gradient(135deg, rgba(23,91,58,0.48) 0%, rgba(60,100,70,0.25) 40%, rgba(41,83,139,0.58) 100%)',
+    lightGradient: 'linear-gradient(135deg, rgba(23,91,58,0.20) 0%, rgba(60,100,70,0.12) 40%, rgba(41,83,139,0.24) 100%)',
+    darkGradient: 'linear-gradient(135deg, rgba(23,91,58,0.26) 0%, rgba(60,100,70,0.14) 40%, rgba(41,83,139,0.30) 100%)',
   };
   return {
     greeting: 'Night owl mode', icon: Moon, emoji: '🌙',
-    lightGradient: 'linear-gradient(135deg, rgba(41,83,139,0.42) 0%, rgba(23,91,58,0.28) 50%, rgba(100,160,200,0.22) 100%)',
-    darkGradient: 'linear-gradient(135deg, rgba(41,83,139,0.52) 0%, rgba(23,91,58,0.38) 50%, rgba(100,160,200,0.28) 100%)',
+    lightGradient: 'linear-gradient(135deg, rgba(41,83,139,0.22) 0%, rgba(23,91,58,0.14) 50%, rgba(100,160,200,0.12) 100%)',
+    darkGradient: 'linear-gradient(135deg, rgba(41,83,139,0.28) 0%, rgba(23,91,58,0.20) 50%, rgba(100,160,200,0.16) 100%)',
   };
 }
 

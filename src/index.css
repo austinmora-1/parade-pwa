@@ -96,9 +96,9 @@
     --vibe-athletic: 152 56% 78%;
     --vibe-productive: 49 100% 67%;
 
-    /* Gradients — Parade Green primary, Ember secondary */
+    /* Gradients — Parade Green primary, Meadow Green secondary */
     --gradient-primary: linear-gradient(135deg, hsl(152 54% 30%), hsl(150 33% 55%));
-    --gradient-secondary: linear-gradient(135deg, hsl(11 60% 56%), hsl(43 84% 72%));
+    --gradient-secondary: linear-gradient(135deg, hsl(152 39% 42%), hsl(150 45% 65%));
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(40 67% 96%));
     --gradient-hero: linear-gradient(160deg, hsl(152 54% 30%), hsl(150 33% 55%), hsl(214 41% 60%));
     --gradient-pearl: linear-gradient(135deg, hsl(0 0% 100%), hsl(240 5% 91%));

@@ -24,8 +24,8 @@
     /* Faded Mint #67B28E */
     --primary-glow: 150 33% 55%;
 
-    /* Ember #D46549 — Secondary */
-    --secondary: 11 60% 56%;
+    /* Meadow Green — Secondary (green accent) */
+    --secondary: 152 39% 42%;
     --secondary-foreground: 0 0% 100%;
 
     /* Warm muted */
@@ -96,9 +96,9 @@
     --vibe-athletic: 152 56% 78%;
     --vibe-productive: 49 100% 67%;
 
-    /* Gradients — Parade Green primary, Ember secondary */
+    /* Gradients — Parade Green primary, Meadow Green secondary */
     --gradient-primary: linear-gradient(135deg, hsl(152 54% 30%), hsl(150 33% 55%));
-    --gradient-secondary: linear-gradient(135deg, hsl(11 60% 56%), hsl(43 84% 72%));
+    --gradient-secondary: linear-gradient(135deg, hsl(152 39% 42%), hsl(150 45% 65%));
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(40 67% 96%));
     --gradient-hero: linear-gradient(160deg, hsl(152 54% 30%), hsl(150 33% 55%), hsl(214 41% 60%));
     --gradient-pearl: linear-gradient(135deg, hsl(0 0% 100%), hsl(240 5% 91%));
@@ -144,7 +144,7 @@
     --primary-foreground: 0 0% 100%;
     --primary-glow: 150 33% 55%;
 
-    --secondary: 11 60% 56%;
+    --secondary: 152 39% 42%;
     --secondary-foreground: 0 0% 100%;
 
     --accent: 40 60% 92%;
@@ -153,7 +153,7 @@
     --ring: 152 54% 30%;
 
     --gradient-primary: linear-gradient(135deg, hsl(152 54% 30%), hsl(150 33% 55%));
-    --gradient-secondary: linear-gradient(135deg, hsl(11 60% 56%), hsl(43 84% 72%));
+    --gradient-secondary: linear-gradient(135deg, hsl(152 39% 42%), hsl(150 45% 65%));
     --gradient-hero: linear-gradient(160deg, hsl(152 54% 30%), hsl(150 33% 55%), hsl(214 41% 60%));
 
     --shadow-glow: 0 0 40px hsl(152 54% 30% / 0.20);
@@ -256,8 +256,8 @@
     --primary-foreground: 25 30% 10%;
     --primary-glow: 150 50% 72%;
 
-    /* Ember secondary */
-    --secondary: 11 65% 60%;
+    /* Meadow Green secondary (dark) */
+    --secondary: 150 45% 50%;
     --secondary-foreground: 0 0% 100%;
 
     --muted: 25 10% 16%;
@@ -287,7 +287,7 @@
     --shadow-glow: 0 0 40px hsl(150 45% 60% / 0.22);
 
     --gradient-primary: linear-gradient(135deg, hsl(152 50% 42%), hsl(150 45% 60%));
-    --gradient-secondary: linear-gradient(135deg, hsl(11 65% 55%), hsl(43 75% 65%));
+    --gradient-secondary: linear-gradient(135deg, hsl(150 45% 50%), hsl(150 50% 70%));
     --gradient-card: linear-gradient(145deg, hsl(25 12% 14%), hsl(25 12% 11%));
     --gradient-hero: linear-gradient(160deg, hsl(152 50% 35%), hsl(150 45% 55%), hsl(214 45% 55%));
     --gradient-pearl: linear-gradient(135deg, hsl(25 12% 16%), hsl(25 12% 12%));

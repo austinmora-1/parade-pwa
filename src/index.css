@@ -256,8 +256,8 @@
     --primary-foreground: 25 30% 10%;
     --primary-glow: 150 50% 72%;
 
-    /* Ember secondary */
-    --secondary: 11 65% 60%;
+    /* Meadow Green secondary (dark) */
+    --secondary: 150 45% 50%;
     --secondary-foreground: 0 0% 100%;
 
     --muted: 25 10% 16%;

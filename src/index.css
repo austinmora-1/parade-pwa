@@ -287,7 +287,7 @@
     --shadow-glow: 0 0 40px hsl(150 45% 60% / 0.22);
 
     --gradient-primary: linear-gradient(135deg, hsl(152 50% 42%), hsl(150 45% 60%));
-    --gradient-secondary: linear-gradient(135deg, hsl(11 65% 55%), hsl(43 75% 65%));
+    --gradient-secondary: linear-gradient(135deg, hsl(150 45% 50%), hsl(150 50% 70%));
     --gradient-card: linear-gradient(145deg, hsl(25 12% 14%), hsl(25 12% 11%));
     --gradient-hero: linear-gradient(160deg, hsl(152 50% 35%), hsl(150 45% 55%), hsl(214 45% 55%));
     --gradient-pearl: linear-gradient(135deg, hsl(25 12% 16%), hsl(25 12% 12%));

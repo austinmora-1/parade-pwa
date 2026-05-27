@@ -25,7 +25,12 @@ serve(async (req) => {
 
     // URLSearchParams already decoded the state, just parse JSON
     const state = JSON.parse(stateParam);
-    const { userId, origin } = state;
+    const { userId, origin, mobile, returnUrl } = state as {
+      userId: string;
+      origin: string;
+      mobile?: boolean;
+      returnUrl?: string | null;
+    };
 
     const nylasClientId = Deno.env.get("NYLAS_CLIENT_ID");
     const nylasApiKey = Deno.env.get("NYLAS_API_KEY");
@@ -109,8 +114,11 @@ serve(async (req) => {
       });
     }
 
-    // Redirect back to app
-    const redirectUrl = `${origin}/settings?calendar=connected`;
+    // Redirect back to app. iOS-initiated flows deep-link via parade://
+    // so the in-app browser auto-dismisses; web stays on /settings.
+    const redirectUrl =
+      returnUrl ||
+      (mobile ? "parade://calendar-connected?ok=1" : `${origin}/settings?calendar=connected`);
     return new Response(null, {
       status: 302,
       headers: { Location: redirectUrl },

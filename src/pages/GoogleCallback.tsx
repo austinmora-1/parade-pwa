@@ -25,6 +25,19 @@ export default function GoogleCallback() {
       return;
     }
 
+    // Decode state to check for mobile-initiated flow.
+    // The auth edge function base64-encodes JSON: { userId, origin, mobile?, returnUrl? }
+    let isMobile = false;
+    let returnUrl: string | null = null;
+    try {
+      const decoded = JSON.parse(atob(state));
+      isMobile = !!decoded.mobile;
+      if (typeof decoded.returnUrl === 'string') returnUrl = decoded.returnUrl;
+    } catch {
+      // ignore — fall back to web redirect
+    }
+    const targetUrl = returnUrl || (isMobile ? 'parade://calendar-connected?ok=1' : '/settings?calendar=connected');
+
     // Forward to edge function
     supabase.functions
       .invoke('google-calendar-callback', {
@@ -36,10 +49,11 @@ export default function GoogleCallback() {
           setErrorMsg(fnError?.message || data?.error || 'Connection failed');
         } else {
           setStatus('success');
-          // Redirect to settings after brief success display
+          // Redirect — for mobile we deep-link back into the native app so
+          // expo-web-browser's openAuthSessionAsync auto-dismisses.
           setTimeout(() => {
-            window.location.href = '/settings?calendar=connected';
-          }, 1500);
+            window.location.href = targetUrl;
+          }, isMobile ? 400 : 1500);
         }
       })
       .catch((err) => {

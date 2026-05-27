@@ -50,9 +50,24 @@ Deno.serve(async (req) => {
     const redirectUri = `${appOrigin}/google-callback`
     // Minimal scope to reduce Google policy blocks (read events only)
     const scope = 'https://www.googleapis.com/auth/calendar.readonly'
-    
+
+    // Optional body: { mobile?: boolean, returnUrl?: string } — when iOS
+    // initiates the flow it sets mobile:true so the /google-callback page
+    // can deep-link back into the native app instead of /settings.
+    let mobile = false
+    let returnUrl: string | null = null
+    if (req.method === 'POST') {
+      try {
+        const body = await req.json().catch(() => ({}))
+        mobile = !!body?.mobile
+        if (typeof body?.returnUrl === 'string') returnUrl = body.returnUrl
+      } catch {
+        // ignore body parse errors
+      }
+    }
+
     // Include the origin so the callback can reconstruct the same redirect_uri
-    const state = btoa(JSON.stringify({ userId, origin: appOrigin }))
+    const state = btoa(JSON.stringify({ userId, origin: appOrigin, mobile, returnUrl }))
     
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth')
     authUrl.searchParams.set('client_id', clientId)

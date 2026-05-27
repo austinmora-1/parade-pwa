@@ -60,14 +60,20 @@ serve(async (req) => {
     }
 
     // Parse optional provider hint from request body ("google" | "icloud").
-    // Defaults to "google" to preserve existing behaviour.
+    // Defaults to "google" to preserve existing behaviour. iOS callers
+    // additionally set mobile:true so nylas-callback can deep-link back
+    // into the native app on success.
     let provider: "google" | "icloud" = "google";
+    let mobile = false;
+    let returnUrl: string | null = null;
     if (req.method === "POST") {
       try {
         const body = await req.json().catch(() => ({}));
         if (body?.provider === "icloud" || body?.provider === "google") {
           provider = body.provider;
         }
+        mobile = !!body?.mobile;
+        if (typeof body?.returnUrl === "string") returnUrl = body.returnUrl;
       } catch {
         // ignore body parse errors, keep default
       }
@@ -80,7 +86,7 @@ serve(async (req) => {
     // Build Nylas OAuth URL. We pass `provider` so Nylas routes the user
     // straight to the right IdP (Google or Apple iCloud) instead of the
     // generic provider chooser. Scopes differ per provider.
-    const state = JSON.stringify({ userId: user.id, origin, provider });
+    const state = JSON.stringify({ userId: user.id, origin, provider, mobile, returnUrl });
     const params = new URLSearchParams({
       client_id: nylasClientId,
       redirect_uri: redirectUri,

@@ -49,10 +49,38 @@ export default function GoogleCallback() {
           setErrorMsg(fnError?.message || data?.error || 'Connection failed');
         } else {
           setStatus('success');
-          // Redirect — for mobile we deep-link back into the native app so
-          // expo-web-browser's openAuthSessionAsync auto-dismisses.
+          // For MOBILE: iOS WKWebView silently blocks programmatic
+          // `window.location.href = 'parade://...'` for custom schemes,
+          // so ASWebAuthenticationSession never sees the navigation and
+          // never auto-dismisses. The workaround is to synthesize a user
+          // gesture by creating a hidden <a href="parade://..."> and
+          // calling .click() — iOS treats this as a real link click and
+          // routes the custom scheme through the scheme handler, which
+          // triggers ASWebAuthSession's auto-dismiss.
+          //
+          // For WEB: regular SPA navigation is fine.
           setTimeout(() => {
-            window.location.href = targetUrl;
+            if (isMobile && targetUrl.startsWith('parade://')) {
+              try {
+                const a = document.createElement('a');
+                a.href = targetUrl;
+                a.rel = 'noopener';
+                // Don't open in a new tab — we want the SAME WebView to
+                // attempt the nav so ASWebAuthSession can intercept it.
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                // Belt-and-suspenders: try window.location too in case
+                // the anchor click is also blocked on some iOS variant.
+                setTimeout(() => {
+                  try { window.location.href = targetUrl; } catch {}
+                }, 200);
+              } catch (e) {
+                window.location.href = targetUrl;
+              }
+            } else {
+              window.location.href = targetUrl;
+            }
           }, isMobile ? 400 : 1500);
         }
       })

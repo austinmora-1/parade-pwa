@@ -1,35 +1,30 @@
-import { useState } from 'react';
-import { Input } from '@/components/ui/input';
+import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { OnboardingData } from '../OnboardingWizard';
-import { Users, X, Plus, Mail } from 'lucide-react';
+import { Users, Share2 } from 'lucide-react';
+import { ShareLinkDialog } from '@/components/share/ShareLinkDialog';
+import { useAuth } from '@/hooks/useAuth';
 
 interface FriendsStepProps {
   data: OnboardingData;
   updateData: (updates: Partial<OnboardingData>) => void;
 }
 
-export function FriendsStep({ data, updateData }: FriendsStepProps) {
-  const [emailInput, setEmailInput] = useState('');
+export function FriendsStep({ data }: FriendsStepProps) {
+  const { user } = useAuth();
+  const [shareOpen, setShareOpen] = useState(false);
 
-  const handleAddEmail = () => {
-    const email = emailInput.trim().toLowerCase();
-    if (email && email.includes('@') && !data.friendEmails.includes(email)) {
-      updateData({ friendEmails: [...data.friendEmails, email] });
-      setEmailInput('');
-    }
-  };
+  const firstName = data.firstName?.trim() || 'A friend';
 
-  const handleRemoveEmail = (email: string) => {
-    updateData({ friendEmails: data.friendEmails.filter(e => e !== email) });
-  };
+  const inviteUrl = useMemo(() => {
+    const params = new URLSearchParams();
+    params.set('ref', firstName);
+    if (user?.id) params.set('from', user.id);
+    return `${window.location.origin}/invite?${params.toString()}`;
+  }, [firstName, user?.id]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddEmail();
-    }
-  };
+  const shareMessage = `Hey! I just joined Parade — it's a calmer way to make plans with friends. Join me:`;
+  const emailSubject = `${firstName} invited you to Parade`;
 
   return (
     <div>
@@ -41,64 +36,38 @@ export function FriendsStep({ data, updateData }: FriendsStepProps) {
           Invite Your Friends
         </h1>
         <p className="text-sm text-muted-foreground">
-          Parade is better with friends! We'll send them an invite.
+          Parade is better with friends. Share your link via iMessage, WhatsApp, or anywhere you chat.
         </p>
       </div>
 
-      <div className="space-y-3">
-        <div className="flex gap-1.5">
-          <Input
-            type="email"
-            placeholder="friend@email.com"
-            value={emailInput}
-            onChange={(e) => setEmailInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="flex-1 h-8 text-sm"
-          />
-          <Button onClick={handleAddEmail} size="sm" variant="outline" className="h-8 w-8 p-0">
-            <Plus className="h-3.5 w-3.5" />
-          </Button>
-        </div>
+      <Button
+        onClick={() => setShareOpen(true)}
+        size="lg"
+        className="w-full gap-2"
+      >
+        <Share2 className="h-4 w-4" />
+        Share invite link
+      </Button>
 
-        {data.friendEmails.length > 0 && (
-          <div className="space-y-1.5">
-            {data.friendEmails.map((email) => (
-              <div
-                key={email}
-                className="flex items-center justify-between rounded-lg bg-muted/50 px-2.5 py-1.5"
-              >
-                <div className="flex items-center gap-2">
-                  <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="text-xs">{email}</span>
-                </div>
-                <button
-                  onClick={() => handleRemoveEmail(email)}
-                  className="rounded p-0.5 hover:bg-muted transition-colors"
-                >
-                  <X className="h-3.5 w-3.5 text-muted-foreground" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+      <p className="mt-2 text-center text-xs text-muted-foreground">
+        Or skip and bring people along whenever.
+      </p>
 
-        {data.friendEmails.length === 0 && (
-          <div className="rounded-lg border border-dashed border-border p-4 text-center">
-            <p className="text-xs text-muted-foreground">
-              No worries — you can bring people along whenever.
-            </p>
-          </div>
-        )}
+      <div className="mt-4 flex items-start gap-2 rounded-lg bg-muted/50 p-2.5">
+        <span className="text-sm">🎉</span>
+        <p className="text-xs text-muted-foreground">
+          You're all set! Click "Get Started" to start using Parade.
+        </p>
       </div>
 
-      <div className="mt-4">
-        <div className="flex items-start gap-2 rounded-lg bg-muted/50 p-2.5">
-          <span className="text-sm">🎉</span>
-          <p className="text-xs text-muted-foreground">
-            You're all set! Click "Get Started" to start using Parade.
-          </p>
-        </div>
-      </div>
+      <ShareLinkDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        title="Join me on Parade"
+        shareMessage={shareMessage}
+        emailSubject={emailSubject}
+        generateLink={async () => inviteUrl}
+      />
     </div>
   );
 }

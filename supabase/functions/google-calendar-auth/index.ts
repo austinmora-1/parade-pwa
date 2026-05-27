@@ -45,15 +45,12 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Redirect through the app domain for a cleaner OAuth consent screen
-    const appOrigin = req.headers.get('origin') || 'https://helloparade.app'
-    const redirectUri = `${appOrigin}/google-callback`
-    // Minimal scope to reduce Google policy blocks (read events only)
-    const scope = 'https://www.googleapis.com/auth/calendar.readonly'
-
     // Optional body: { mobile?: boolean, returnUrl?: string } — when iOS
-    // initiates the flow it sets mobile:true so the /google-callback page
-    // can deep-link back into the native app instead of /settings.
+    // initiates the flow it sets mobile:true. For mobile we send the
+    // OAuth callback directly to THIS project's edge function (so tokens
+    // land in the same Supabase project the iOS app reads from), instead
+    // of bouncing through the web PWA which may live on a different
+    // project entirely.
     let mobile = false
     let returnUrl: string | null = null
     if (req.method === 'POST') {
@@ -66,8 +63,21 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Include the origin so the callback can reconstruct the same redirect_uri
-    const state = btoa(JSON.stringify({ userId, origin: appOrigin, mobile, returnUrl }))
+    const appOrigin = req.headers.get('origin') || 'https://helloparade.app'
+    // Mobile callers: bypass the PWA. Land directly on this project's
+    // google-calendar-callback edge function so tokens are written to
+    // the same Supabase project iOS later polls for status.
+    const supabaseFunctionUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/google-calendar-callback`
+    const redirectUri = mobile
+      ? supabaseFunctionUrl
+      : `${appOrigin}/google-callback`
+    // Minimal scope to reduce Google policy blocks (read events only)
+    const scope = 'https://www.googleapis.com/auth/calendar.readonly'
+
+    // Include the origin AND the redirect_uri actually sent to Google
+    // — google-calendar-callback must echo the SAME value when
+    // exchanging the code for tokens.
+    const state = btoa(JSON.stringify({ userId, origin: appOrigin, mobile, returnUrl, redirectUri }))
     
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth')
     authUrl.searchParams.set('client_id', clientId)

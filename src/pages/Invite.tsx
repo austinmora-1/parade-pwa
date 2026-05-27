@@ -10,7 +10,7 @@ import { Calendar, Users, MessageCircle, CheckCircle2 } from "lucide-react";
 import { ConfettiBackground } from "@/components/landing/ConfettiBackground";
 import { ParadeWordmark } from "@/components/ui/ParadeWordmark";
 import { ElephantLoader } from "@/components/ui/ElephantLoader";
-import paradeElephantLogo from "@/assets/parade-elephant-dark.png";
+import paradeElephantLogo from "@/assets/parade-elephant-logo.png";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -104,16 +104,27 @@ const Invite = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(180deg, #0F1A14 0%, #24382D 100%)' }}>
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <ElephantLoader fullscreen={false} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ background: 'linear-gradient(180deg, #0F1A14 0%, #24382D 100%)' }}>
-      <ConfettiBackground count={60} />
-      
+    <div className="min-h-screen relative overflow-hidden bg-background">
+      {/* Soft confetti backdrop */}
+      <div className="absolute inset-0 pointer-events-none opacity-50">
+        <ConfettiBackground count={60} />
+      </div>
+      {/* Warm radial wash — matches Landing */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            'radial-gradient(ellipse at top, hsl(var(--primary-glow) / 0.25) 0%, transparent 55%), radial-gradient(ellipse at bottom right, hsl(var(--secondary) / 0.12) 0%, transparent 60%)',
+        }}
+      />
+
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-4 py-12">
         {/* Logo + Wordmark */}
         <motion.div
@@ -133,11 +144,14 @@ const Invite = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.15 }}
         >
-          <h1 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: 'Bungee, sans-serif' }}>
-            You're Invited!
+          <h1
+            className="font-display text-foreground text-4xl sm:text-5xl tracking-[-0.02em] mb-2"
+            style={{ fontFamily: "'Fraunces', Georgia, serif", fontWeight: 900 }}
+          >
+            You're <span className="text-primary">invited!</span>
           </h1>
-          <p className="text-primary text-base">
-            <span className="font-semibold">{decodeURIComponent(inviterName)}</span> wants to make plans with you on Parade
+          <p className="text-foreground/75 text-base">
+            <span className="font-semibold text-foreground">{decodeURIComponent(inviterName)}</span> wants to make plans with you on Parade
           </p>
         </motion.div>
 
@@ -154,21 +168,21 @@ const Invite = () => {
               { icon: Users, title: "See when friends are free", desc: "Find the perfect time to hang out" },
               { icon: MessageCircle, title: "Plan without the hassle", desc: "No more endless group chats" },
             ].map((item) => (
-              <div key={item.title} className="flex items-start gap-3 p-3 rounded-xl bg-primary/10 border border-primary/10">
+              <div key={item.title} className="flex items-start gap-3 p-3 rounded-2xl bg-card/70 backdrop-blur-sm border border-border/60">
                 <item.icon className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                 <div>
-                  <p className="font-medium text-sm text-white">{item.title}</p>
-                  <p className="text-xs text-primary/70">{item.desc}</p>
+                  <p className="font-medium text-sm text-foreground">{item.title}</p>
+                  <p className="text-xs text-muted-foreground">{item.desc}</p>
                 </div>
               </div>
             ))}
           </div>
 
           {/* Sign-up Form */}
-          <Card className="border-primary/20 bg-card/95 backdrop-blur-sm shadow-xl">
+          <Card className="border-border bg-card shadow-soft">
             <CardHeader className="text-center pb-3">
-              <CardTitle className="text-lg text-white">Create Your Account</CardTitle>
-              <CardDescription className="text-primary/70">Sign up to join and start making plans</CardDescription>
+              <CardTitle className="text-lg">Create Your Account</CardTitle>
+              <CardDescription>Sign up to join and start making plans</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSignup} className="space-y-3">
@@ -208,10 +222,9 @@ const Invite = () => {
                 </div>
                 <Button
                   type="submit"
-                  className="w-full text-base font-bold py-5 rounded-xl mt-2"
+                  className="w-full text-base font-medium py-5 rounded-full mt-2 shadow-md"
                   size="lg"
                   disabled={isLoading}
-                  style={{ fontFamily: 'Bungee, sans-serif' }}
                 >
                   {isLoading ? 'Creating account...' : 'Join the Parade'}
                 </Button>
@@ -227,7 +240,7 @@ const Invite = () => {
                     "Add friends and start making plans!",
                   ].map((step, i) => (
                     <div key={i} className="flex items-center gap-2.5">
-                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-primary shrink-0">
+                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/15 text-primary shrink-0">
                         <CheckCircle2 className="h-3.5 w-3.5" />
                       </div>
                       <p className="text-xs text-muted-foreground">{step}</p>
@@ -239,7 +252,7 @@ const Invite = () => {
           </Card>
 
           {/* Already have an account */}
-          <p className="text-xs text-center text-primary/50">
+          <p className="text-xs text-center text-muted-foreground">
             Already have an account?{' '}
             <button
               onClick={() => navigate("/login")}
@@ -249,7 +262,7 @@ const Invite = () => {
             </button>
           </p>
 
-          <p className="text-xs text-center text-primary/40">
+          <p className="text-xs text-center text-muted-foreground/70">
             Free to use • No credit card required
           </p>
         </motion.div>

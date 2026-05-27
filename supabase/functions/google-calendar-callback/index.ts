@@ -59,11 +59,17 @@ Deno.serve(async (req) => {
 
     let userId: string;
     let origin: string = "";
+    let mobile = false;
+    let stateRedirectUri: string | null = null;
+    let returnUrl: string | null = null;
     try {
       const stateData = JSON.parse(atob(state));
       userId = stateData.userId;
       origin = stateData.origin || "";
-      console.log("Parsed userId:", userId, "origin:", origin);
+      mobile = !!stateData.mobile;
+      stateRedirectUri = stateData.redirectUri || null;
+      returnUrl = stateData.returnUrl || null;
+      console.log("Parsed userId:", userId, "origin:", origin, "mobile:", mobile);
     } catch (e) {
       console.error("Failed to parse state:", e);
       return new Response(
@@ -90,8 +96,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    // The redirect_uri must match what was used in the auth request
-    // Use the origin from state (which was set during auth) or the caller's origin
+    // The redirect_uri sent here MUST match what was used in the auth
+    // request — that's what we encoded into state.redirectUri. Fall back
+    // to the legacy web URL for old auth requests that predate that field.
     const appOrigin = origin || callerOrigin || "https://helloparade.app";
     let cleanOrigin: string;
     try {
@@ -99,7 +106,7 @@ Deno.serve(async (req) => {
     } catch {
       cleanOrigin = "https://helloparade.app";
     }
-    const redirectUri = `${cleanOrigin}/google-callback`;
+    const redirectUri = stateRedirectUri || `${cleanOrigin}/google-callback`;
 
     console.log("Exchanging code for tokens with redirect:", redirectUri);
 
@@ -200,17 +207,22 @@ Deno.serve(async (req) => {
       });
     }
 
-    // For GET requests (legacy), redirect
+    // For GET requests: direct callback from Google. iOS-initiated flow
+    // (state.mobile) deep-links into the native app; web bounces back to
+    // /settings.
     let appUrl = origin || "https://helloparade.app";
     try {
       appUrl = new URL(appUrl).origin;
     } catch {
       appUrl = "https://helloparade.app";
     }
+    const successLocation =
+      returnUrl ||
+      (mobile ? "parade://calendar-connected?ok=1" : `${appUrl}/settings?calendar=connected`);
 
     return new Response(null, {
       status: 302,
-      headers: { "Location": `${appUrl}/settings?calendar=connected` },
+      headers: { "Location": successLocation },
     });
   } catch (error: unknown) {
     console.error("Unhandled error:", error);

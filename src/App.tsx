@@ -32,6 +32,7 @@ const Login = lazy(() => import("./pages/Login"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
+const SmsConsent = lazy(() => import("./pages/SmsConsent"));
 const PlanDetail = lazy(() => import("./pages/PlanDetail"));
 const DayDetail = lazy(() => import("./pages/DayDetail"));
 const TripDetail = lazy(() => import("./pages/TripDetail"));
@@ -136,6 +137,7 @@ const AppRoutes = () => {
     <Route path="/reset-password" element={<ResetPassword />} />
     <Route path="/privacy" element={<Privacy />} />
     <Route path="/terms" element={<Terms />} />
+    <Route path="/sms-consent" element={<SmsConsent />} />
     <Route path="/google-callback" element={<GoogleCallback />} />
     <Route
       path="/login"

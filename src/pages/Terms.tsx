@@ -132,10 +132,10 @@ export default function Terms() {
           <section>
             <h2 className="text-xl font-semibold mb-3">14. SMS & Text Messaging</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Parade may send you text messages (SMS) for the purpose of friend invitations, plan notifications, and account-related alerts. By providing your phone number and using features that trigger text messages (such as inviting a friend via SMS), you expressly consent to receive text messages from Parade. By using these features, you acknowledge and agree to the following:
+              Parade sends you a one-time passcode (OTP) via text message (SMS) to verify your phone number when you create an account or sign in. This is a transactional, account-verification program only — we do not send marketing or promotional text messages. By entering your phone number and tapping "Send code" at sign-up, you expressly consent to receive the verification code from Parade at that number. You acknowledge and agree to the following:
             </p>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 mt-2">
-              <li>Message frequency varies based on your usage of the App</li>
+              <li>Messages are sent only when you request a verification code, so frequency varies based on how often you sign in</li>
               <li>Message and data rates may apply depending on your mobile carrier and plan</li>
               <li>You can opt out of receiving text messages at any time by replying STOP to any message or by contacting us at <a href="mailto:support@helloparade.app" className="text-primary hover:underline">support@helloparade.app</a></li>
               <li>For help, reply HELP to any message or contact <a href="mailto:support@helloparade.app" className="text-primary hover:underline">support@helloparade.app</a></li>

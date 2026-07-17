@@ -238,25 +238,30 @@ serve(async (req) => {
       });
     }
 
-    // Fetch events
+    // Fetch events (Nylas v3 caps limit at 200/page — paginate via next_cursor)
     const now = new Date();
-    const thirtyDaysLater = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-    
-    const params = new URLSearchParams({
-      start: Math.floor(now.getTime() / 1000).toString(),
-      end: Math.floor(thirtyDaysLater.getTime() / 1000).toString(),
-      limit: "200",
-    });
+    const ninetyDaysLater = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
 
-    let eventsResponse = await fetch(
-      `${nylasApiOrigin}/v3/grants/${effectiveGrantId}/events?${params.toString()}`,
-      {
-        headers: {
-          Authorization: `Bearer ${access_token}`,
-          "Content-Type": "application/json",
-        },
+    const buildEventsUrl = (pageToken?: string) => {
+      const params = new URLSearchParams({
+        start: Math.floor(now.getTime() / 1000).toString(),
+        end: Math.floor(ninetyDaysLater.getTime() / 1000).toString(),
+        limit: "200",
+      });
+      if (pageToken) {
+        params.set("page_token", pageToken);
       }
-    );
+      return `${nylasApiOrigin}/v3/grants/${effectiveGrantId}/events?${params.toString()}`;
+    };
+
+    let activeAccessToken = access_token;
+
+    let eventsResponse = await fetch(buildEventsUrl(), {
+      headers: {
+        Authorization: `Bearer ${activeAccessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
 
     // Handle 401/403 - try to refresh token
     if (eventsResponse.status === 401 || eventsResponse.status === 403) {
@@ -285,15 +290,13 @@ serve(async (req) => {
           p_expires_at: expiresAt,
         });
 
-        eventsResponse = await fetch(
-          `${nylasApiOrigin}/v3/grants/${effectiveGrantId}/events?${params.toString()}`,
-          {
-            headers: {
-              Authorization: `Bearer ${refreshResult.access_token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        activeAccessToken = refreshResult.access_token;
+        eventsResponse = await fetch(buildEventsUrl(), {
+          headers: {
+            Authorization: `Bearer ${activeAccessToken}`,
+            "Content-Type": "application/json",
+          },
+        });
       } else {
         return new Response(
           JSON.stringify({ synced: false, message: "Session expired. Please reconnect your calendar." }),
@@ -311,8 +314,32 @@ serve(async (req) => {
       });
     }
 
-    const eventsData = await eventsResponse.json();
-    const events = (eventsData.data || []).map((event: any) => {
+    // Aggregate all pages (hard cap to avoid unbounded loops)
+    const MAX_PAGES = 10;
+    const rawEvents: any[] = [];
+    let eventsData = await eventsResponse.json();
+    rawEvents.push(...(eventsData.data || []));
+    let nextCursor = eventsData.next_cursor;
+    let pagesFetched = 1;
+
+    while (nextCursor && pagesFetched < MAX_PAGES) {
+      const pageResponse = await fetch(buildEventsUrl(nextCursor), {
+        headers: {
+          Authorization: `Bearer ${activeAccessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!pageResponse.ok) {
+        console.error("Nylas sync page fetch failed:", await pageResponse.text());
+        break; // Sync what we have so far
+      }
+      eventsData = await pageResponse.json();
+      rawEvents.push(...(eventsData.data || []));
+      nextCursor = eventsData.next_cursor;
+      pagesFetched++;
+    }
+
+    const events = rawEvents.map((event: any) => {
       const startDt = event.when?.start_time ? new Date(event.when.start_time * 1000) : null;
       const endDt = event.when?.end_time ? new Date(event.when.end_time * 1000) : null;
       return {

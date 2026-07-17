@@ -1,7 +1,16 @@
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
+/**
+ * Public SMS opt-in / proof-of-consent page.
+ *
+ * Submitted to Twilio as the "Proof of consent (opt-in)" URL for toll-free
+ * verification. It walks through exactly how a user consents to receive the
+ * one-time verification code (the only SMS Parade sends), and surfaces every
+ * disclosure carriers look for: program/sender identity, message type and
+ * frequency, "message and data rates may apply", and STOP/HELP instructions.
+ */
 export default function SmsConsent() {
   const navigate = useNavigate();
 
@@ -18,32 +27,35 @@ export default function SmsConsent() {
 
         <div className="prose prose-sm dark:prose-invert max-w-none space-y-6">
           <section>
-            <h2 className="text-xl font-semibold mb-3">Program Description</h2>
+            <h2 className="text-xl font-semibold mb-3">1. Program Description</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Parade ("we", "us") sends a one-time passcode (OTP) via SMS to verify your phone
-              number when you create an account or sign in. This is a transactional,
+              Parade ("we", "our", or "us") sends a one-time passcode (OTP) via SMS to verify
+              your phone number when you create an account or sign in. This is a transactional,
               account-verification program only — we do not send marketing or promotional text
               messages through it. The verification code is the only message you will receive.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold mb-3">How to Opt In</h2>
+            <h2 className="text-xl font-semibold mb-3">2. How You Opt In</h2>
             <p className="text-muted-foreground leading-relaxed">
-              You opt in within the Parade app and web sign-up flow. No phone number is ever
-              purchased, uploaded, or pre-filled — you enter it yourself. The flow is:
+              Consent to receive the verification SMS is collected directly within the Parade
+              app and web sign-up flow. No phone number is ever purchased, uploaded, or
+              pre-filled — you enter it yourself. The opt-in flow is:
             </p>
             <ol className="list-decimal list-inside text-muted-foreground space-y-2 mt-2">
               <li>You open Parade and reach the "Get started" sign-up screen.</li>
               <li>You type your own mobile phone number into the "Phone number" field.</li>
               <li>
-                Directly beneath the field you see the consent disclosure (quoted below) stating
-                that tapping the button means you agree to receive a verification code by SMS.
+                Directly beneath the field, you see the consent disclosure (quoted in Section 3)
+                stating that tapping the button means you agree to receive a verification code
+                by SMS.
               </li>
               <li>You tap <strong>"Send code"</strong>, which submits your number and triggers the SMS.</li>
               <li>You receive the one-time code and enter it to finish verifying.</li>
             </ol>
 
+            {/* Visual reproduction of the in-app sign-up screen the user sees. */}
             <div className="mt-6 rounded-2xl border bg-muted/30 p-6">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-4">
                 What the sign-up screen looks like
@@ -72,7 +84,7 @@ export default function SmsConsent() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold mb-3">Consent Disclosure Shown at Sign-Up</h2>
+            <h2 className="text-xl font-semibold mb-3">3. Consent Disclosure Shown at Sign-Up</h2>
             <p className="text-muted-foreground leading-relaxed">
               The following text is displayed beneath the phone number field, immediately above
               the "Send code" button, on both the iOS app and the web sign-up screen:
@@ -81,18 +93,17 @@ export default function SmsConsent() {
               By tapping "Send code," you agree to receive a one-time verification code from
               Parade via SMS. Message and data rates may apply. Message frequency varies. Reply
               STOP to opt out or HELP for help. See our{' '}
-              <a href="/privacy" className="text-primary underline not-italic">Privacy Policy</a>{' '}
+              <Link to="/privacy" className="text-primary hover:underline not-italic">Privacy Policy</Link>{' '}
               and{' '}
-              <a href="/sms-consent" className="text-primary underline not-italic">SMS Terms</a>.
+              <Link to="/sms-consent" className="text-primary hover:underline not-italic">SMS Terms</Link>.
             </blockquote>
             <p className="text-muted-foreground leading-relaxed mt-3">
-              Consent to receive these messages is not a condition of any purchase or of using
-              Parade.
+              Consent to receive these messages is not a condition of any purchase.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold mb-3">Message Content & Frequency</h2>
+            <h2 className="text-xl font-semibold mb-3">4. Message Content & Frequency</h2>
             <p className="text-muted-foreground leading-relaxed">
               Messages are sent only in response to your own request to verify your number, so
               frequency varies and depends entirely on how often you sign in. A typical message
@@ -104,53 +115,45 @@ export default function SmsConsent() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold mb-3">Message and Data Rates</h2>
+            <h2 className="text-xl font-semibold mb-3">5. Message & Data Rates</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Message and data rates may apply. Parade does not charge for SMS messages, but your
-              mobile carrier's standard messaging rates will apply. Contact your carrier for
-              pricing details.
+              Message and data rates may apply. Charges depend on your wireless plan and carrier;
+              please contact your carrier for details.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold mb-3">How to Opt Out</h2>
+            <h2 className="text-xl font-semibold mb-3">6. Opt-Out and Help</h2>
             <p className="text-muted-foreground leading-relaxed">
-              You can opt out at any time by replying <strong>STOP</strong> to any message you
-              receive from us. After you send STOP, we will send one confirmation message and you
-              will no longer receive SMS messages from Parade. Note that opting out means you will
-              no longer be able to verify your phone number to sign in.
+              You can opt out of the verification SMS program at any time by replying{' '}
+              <strong>STOP</strong> to any message you receive from us. After you send STOP, we
+              will send one confirmation message and will not send further texts. Note that
+              opting out means you will no longer be able to verify your phone number to sign in.
+              For help, reply <strong>HELP</strong> to any message, or contact us at{' '}
+              <a href="mailto:support@helloparade.app" className="text-primary hover:underline">
+                support@helloparade.app
+              </a>.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold mb-3">Help</h2>
+            <h2 className="text-xl font-semibold mb-3">7. Privacy</h2>
             <p className="text-muted-foreground leading-relaxed">
-              For help, reply <strong>HELP</strong> to any message, or email us at <a href="mailto:support@helloparade.app" className="text-primary underline">support@helloparade.app</a>.
+              Mobile information collected for SMS verification is used solely to deliver the
+              one-time passcode and is never sold or shared with third parties for marketing
+              purposes. See our{' '}
+              <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>{' '}
+              for full details.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold mb-3">Supported Carriers</h2>
+            <h2 className="text-xl font-semibold mb-3">8. Contact Us</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Parade's SMS program is supported by major US carriers, including AT&T, T-Mobile,
-              Verizon, US Cellular, and others. Carriers are not liable for delayed or undelivered
-              messages.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold mb-3">Privacy</h2>
-            <p className="text-muted-foreground leading-relaxed">
-              We will not share, sell, or rent your mobile phone number or SMS opt-in information
-              to any third party for marketing purposes. Phone numbers are used solely to deliver
-              the one-time verification code described above. For more information, see our <a href="/privacy" className="text-primary underline">Privacy Policy</a>.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold mb-3">Contact</h2>
-            <p className="text-muted-foreground leading-relaxed">
-              Questions about our SMS program? Email <a href="mailto:support@helloparade.app" className="text-primary underline">support@helloparade.app</a>.
+              If you have questions about this SMS program, please contact us at{' '}
+              <a href="mailto:support@helloparade.app" className="text-primary hover:underline">
+                support@helloparade.app
+              </a>.
             </p>
           </section>
         </div>

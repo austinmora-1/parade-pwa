@@ -2,7 +2,10 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Calendar, Clock, MapPin, Check, Loader2, Sparkles, Users, Heart } from 'lucide-react';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { iosSupabase } from '@/integrations/supabase/iosClient';
+import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { ACTIVITY_CONFIG, TIME_SLOT_LABELS } from '@/types/planner';
 import { ActivityIcon } from '@/components/ui/ActivityIcon';
@@ -57,21 +60,42 @@ export default function PlanInvite() {
   const [guestName, setGuestName] = useState('');
   const [guestSubmitting, setGuestSubmitting] = useState(false);
   const [guestRsvpd, setGuestRsvpd] = useState(false);
+  // Which Supabase project this invite token resolved against. PWA-minted
+  // tokens live in the web project; tokens minted by the native iOS app live
+  // in a SEPARATE iOS project, so we fall back to it when the web project
+  // has no matching row. Every follow-up RPC must use this same client.
+  const [inviteClient, setInviteClient] = useState<SupabaseClient<Database>>(supabase);
+  const isIosInvite = inviteClient === iosSupabase;
 
   useEffect(() => {
     if (!token) return;
 
     const fetchInvite = async () => {
-      const { data, error } = await supabase.rpc('get_plan_invite_details', { p_token: token });
-      if (error || !data || (data as any[]).length === 0) {
+      // Web project first so PWA-minted tokens never cross-match the iOS
+      // project; only fall back to iOS when the web project has no row.
+      let client: SupabaseClient<Database> = supabase;
+      let source: 'web' | 'ios' = 'web';
+      let result = await supabase.rpc('get_plan_invite_details', { p_token: token });
+      if (result.error || !result.data || (result.data as any[]).length === 0) {
+        client = iosSupabase;
+        source = 'ios';
+        result = await iosSupabase.rpc('get_plan_invite_details', { p_token: token });
+      }
+
+      if (result.error || !result.data || (result.data as any[]).length === 0) {
         setError('This invite link is invalid or has expired.');
         setLoading(false);
       } else {
-        const inviteData = (data as any[])[0] as PlanInviteData;
+        console.info(`[PlanInvite] invite token resolved via ${source} Supabase project`);
+        setInviteClient(client);
+        const inviteData = (result.data as any[])[0] as PlanInviteData;
         setInvite(inviteData);
 
-        // If signed in, redirect to plan detail page
-        if (!authLoading && user) {
+        // If signed in, redirect to plan detail page — but only when the
+        // invite lives in the web project. iOS-project invites have no plan
+        // row in the web project, and a web session cannot act on the iOS
+        // project, so those stay on this page (guest RSVP + open-in-app).
+        if (!authLoading && user && source === 'web') {
           if (inviteData.invite_status === 'accepted') {
             navigate(`/plan/${inviteData.plan_id}`, { replace: true });
           } else if (inviteData.invite_status === 'linked') {
@@ -98,7 +122,7 @@ export default function PlanInvite() {
 
     setAccepting(true);
     try {
-      const { data, error } = await supabase.rpc('accept_plan_invite', { p_token: token });
+      const { data, error } = await inviteClient.rpc('accept_plan_invite', { p_token: token });
       if (error) throw error;
       toast.success('You\'ve joined the plan!');
       navigate(`/plan/${data}`);
@@ -123,7 +147,7 @@ export default function PlanInvite() {
     }
     setGuestSubmitting(true);
     try {
-      const { error } = await supabase.rpc('rsvp_plan_invite_as_guest', {
+      const { error } = await inviteClient.rpc('rsvp_plan_invite_as_guest', {
         p_token: token,
         p_name: name,
       });
@@ -243,6 +267,39 @@ export default function PlanInvite() {
               <span className="text-xs text-primary/80">
                 {inviterFirstName} will see you on the guest list.
               </span>
+            </div>
+          ) : isIosInvite ? (
+            /* Invite was minted in the native iOS app (separate Supabase
+               project). A web session cannot accept it, so offer the app
+               link plus the anonymous guest RSVP instead. */
+            <div className="space-y-2">
+              <Button asChild className="w-full" size="lg">
+                <a href={`https://helloparade.app/invite.html?t=${encodeURIComponent(token || '')}`}>
+                  Open in the Parade app
+                </a>
+              </Button>
+              <p className="text-xs text-center text-muted-foreground">
+                This invite was made in the Parade iOS app — open it there to join, or RSVP below.
+              </p>
+              <div className="rounded-xl border border-border bg-card p-3 space-y-2 mt-2">
+                <p className="text-xs text-muted-foreground">
+                  Let {inviterFirstName} know you're coming — no account needed.
+                </p>
+                <Input
+                  placeholder="Your name"
+                  value={guestName}
+                  onChange={(e) => setGuestName(e.target.value)}
+                  disabled={guestSubmitting}
+                />
+                <Button
+                  size="sm"
+                  className="w-full"
+                  onClick={handleGuestRsvp}
+                  disabled={guestSubmitting || !guestName.trim()}
+                >
+                  {guestSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'RSVP as guest'}
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="space-y-2">

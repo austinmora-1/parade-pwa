@@ -1,0 +1,19 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["9THMCL38AJ.app.parade.ios"],
+        "components": [
+          { "/": "/invite/*" },
+          { "/": "/share/*" },
+          { "/": "/imessage-plan" },
+          { "/": "/imsg" },
+          { "/": "/imsg-connect" }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["9THMCL38AJ.app.parade.ios"]
+  }
+}

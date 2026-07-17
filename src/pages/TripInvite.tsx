@@ -2,7 +2,10 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Calendar, MapPin, Users, Check, Loader2, Plane, Home } from 'lucide-react';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { iosSupabase } from '@/integrations/supabase/iosClient';
+import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { ParadeWordmark } from '@/components/ui/ParadeWordmark';
@@ -49,22 +52,40 @@ export default function TripInvite() {
   const [loading, setLoading] = useState(true);
   const [accepting, setAccepting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Which Supabase project this invite token resolved against. PWA-minted
+  // tokens live in the web project; tokens minted by the native iOS app live
+  // in a SEPARATE iOS project, so we fall back to it when the web project
+  // has no matching row. Every follow-up RPC must use this same client.
+  const [inviteClient, setInviteClient] = useState<SupabaseClient<Database>>(supabase);
+  const isIosInvite = inviteClient === iosSupabase;
 
   useEffect(() => {
     if (!token) return;
-    const fetchInvite = async () => {
-      const { data, error } = await supabase.rpc('get_trip_invite_details', { p_token: token });
-      if (error || !data) {
-        setError('This invite link is invalid or has expired.');
-        setLoading(false);
-        return;
-      }
+    const parseInvite = (data: unknown, rpcError: unknown): TripInviteData | null => {
+      if (rpcError || !data) return null;
       const inviteData = data as unknown as TripInviteData;
-      if (inviteData.error) {
+      return inviteData.error ? null : inviteData;
+    };
+    const fetchInvite = async () => {
+      // Web project first so PWA-minted tokens never cross-match the iOS
+      // project; only fall back to iOS when the web project has no row.
+      let client: SupabaseClient<Database> = supabase;
+      let source: 'web' | 'ios' = 'web';
+      let result = await supabase.rpc('get_trip_invite_details', { p_token: token });
+      let inviteData = parseInvite(result.data, result.error);
+      if (!inviteData) {
+        client = iosSupabase;
+        source = 'ios';
+        result = await iosSupabase.rpc('get_trip_invite_details', { p_token: token });
+        inviteData = parseInvite(result.data, result.error);
+      }
+      if (!inviteData) {
         setError('This invite link is invalid or has expired.');
         setLoading(false);
         return;
       }
+      console.info(`[TripInvite] invite token resolved via ${source} Supabase project`);
+      setInviteClient(client);
       setInvite(inviteData);
       setLoading(false);
     };
@@ -74,11 +95,14 @@ export default function TripInvite() {
   // Auto-accept after sign-in (if logged in and invite valid)
   useEffect(() => {
     if (!user || !invite || authLoading) return;
+    // iOS-project invites have no matching trip in the web project, so a
+    // web-session redirect to /trip/{id} would 404 — stay on this page.
+    if (isIosInvite) return;
     // If the invite is already accepted by this user, just redirect
     if (invite.invite_status === 'accepted' && invite.trip_id) {
       navigate(`/trip/${invite.trip_id}`, { replace: true });
     }
-  }, [user, invite, authLoading, navigate]);
+  }, [user, invite, authLoading, navigate, isIosInvite]);
 
   const handleAccept = async () => {
     if (!token) return;
@@ -88,7 +112,7 @@ export default function TripInvite() {
     }
     setAccepting(true);
     try {
-      const { data, error } = await supabase.rpc('accept_trip_invite', { p_token: token });
+      const { data, error } = await inviteClient.rpc('accept_trip_invite', { p_token: token });
       if (error) throw error;
       const result = data as { proposal_id: string; trip_id: string | null };
       toast.success("You've joined the trip!");
@@ -211,6 +235,19 @@ export default function TripInvite() {
           <div className="flex items-center justify-center gap-2 py-3 rounded-lg bg-primary/10 text-primary">
             <Check className="h-5 w-5" />
             <span className="font-medium">Invite already accepted</span>
+          </div>
+        ) : isIosInvite ? (
+          /* Invite was minted in the native iOS app (separate Supabase
+             project). A web session cannot accept it, so link into the app. */
+          <div className="space-y-3">
+            <Button asChild className="w-full" size="lg">
+              <a href={`https://helloparade.app/invite.html?tt=${encodeURIComponent(token || '')}`}>
+                Open in the Parade app
+              </a>
+            </Button>
+            <p className="text-xs text-center text-muted-foreground">
+              This invite was made in the Parade iOS app — open it there to join and vote on dates.
+            </p>
           </div>
         ) : (
           <div className="space-y-3">

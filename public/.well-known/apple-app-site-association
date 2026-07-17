@@ -6,6 +6,9 @@
         "components": [
           { "/": "/invite/*" },
           { "/": "/share/*" },
+          { "/": "/invite.html" },
+          { "/": "/plan-invite/*" },
+          { "/": "/trip-invite/*" },
           { "/": "/imessage-plan" },
           { "/": "/imsg" },
           { "/": "/imsg-connect" }
